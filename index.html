@@ -2,11 +2,15 @@
   <meta charset=utf8 />
   <title>PanoRendo</title>
   <script type="text/javascript">
-    var sin = Math.sin, cos = Math.cos, acos = Math.acos, atan2 = Math.atan2, sqrt = Math.sqrt, min = Math.min, max = Math.max,
+    'use strict';
+
+    const sin = Math.sin, cos = Math.cos, acos = Math.acos, atan2 = Math.atan2, sqrt = Math.sqrt, min = Math.min, max = Math.max,
       pow = Math.pow, exp = Math.exp, PI = Math.PI, RPD = PI / 180, O1 = 5e-5, O2 = 5e-5, O3 = 5e-6, R1 = .04, R2 = .09, R3 = .25;
 
+    let x0, y0, x1, y1, z, imgData, ctx;
+
     function Pixel(x, y, r, g, b) {
-      p = 4 * ((y | 0) * x1 + (x | 0));
+      const p = 4 * ((y | 0) * x1 + (x | 0));
       imgData.data[p] = r;
       imgData.data[p + 1] = g;
       imgData.data[p + 2] = b;
@@ -22,10 +26,11 @@
     function clearXY() { HTML("coor", " "); }
 
     function showXY(event) {
-      p = 4 * (event.offsetY * x1 + event.offsetX);
+      let p = 4 * (event.offsetY * x1 + event.offsetX);
       ctx.fillStyle = "rgb(" + imgData.data[p++] + "," + imgData.data[p++] + "," + imgData.data[p++] + ")";
-      dx = 2 * (event.offsetX + 1) / x1 - 1;
-      dy = 2 * (event.offsetY + 1) / y1 - 1;
+      const dx = 2 * (event.offsetX + 1) / x1 - 1;
+      const dy = 2 * (event.offsetY + 1) / y1 - 1;
+      let x, y;
       if (!z) {
         x = atan2(dy, dx) / RPD;
         y = sqrt(dx * dx + dy * dy);
@@ -40,6 +45,11 @@
     }
 
     function Graph() {
+      var SE, SA, H, T, O, hd, B, cv, R, m1, EH, y2, cosS, sinS,
+        HS, RS, MS, OS, W1, W2, M2, MH, d, g, g2, c, M1, M3, MP0, A0, V0, V1, y, VE, fe,
+        cosV, sinV, sinSV, cosSV, HV, RV, MV, R0, M0, S1, S2, S3, RS1, RS2, RS3, Z1, Z2, Z3,
+        MS1, MS2, MS3, A1, A2, A3, V2, dx, dy, x2, x, VA, G, P, MP, V, A, I1, I2, I3, E1, E2, E3;
+
       SE = GetVal("Elev") * RPD;
       SA = GetVal("Azi") * RPD;
       H = GetVal("Alti") * 1;
@@ -224,7 +234,8 @@
     <center>
       <a href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/en_rendo.htm">User's
         Manual</a>
-      <br><br><br><b>Abdurrahman ÖZLEM © 2021 (PrayWare), <a href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/rendo_en.htm">source</a></b>
+      <br><br><br><b>Abdurrahman ÖZLEM © 2021 (PrayWare), <a
+          href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/rendo_en.htm">source</a></b>
     </center>
   </form>
 </body>
