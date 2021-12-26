@@ -4,8 +4,8 @@
   <script type="text/javascript">
     'use strict';
 
-    const sin = Math.sin, cos = Math.cos, acos = Math.acos, atan2 = Math.atan2, sqrt = Math.sqrt, min = Math.min, max = Math.max,
-      pow = Math.pow, exp = Math.exp, PI = Math.PI, RPD = PI / 180, O1 = 5e-5, O2 = 5e-5, O3 = 5e-6, R1 = .04, R2 = .09, R3 = .25;
+    const { sin, cos, acos, atan2, sqrt, min, max, pow, exp, PI } = Math;
+    const RPD = PI / 180, O1 = 5e-5, O2 = 5e-5, O3 = 5e-6, R1 = .04, R2 = .09, R3 = .25;
 
     let x0, y0, x1, y1, z, imgData, ctx;
 
@@ -36,8 +36,7 @@
         y = sqrt(dx * dx + dy * dy);
         if (y > 1) { clearXY(); return; }
         y = 90 * (1 - y);
-      }
-      else {
+      } else {
         x = dx * x0 / RPD;
         y = (.5 - dy / 2) * y0 / RPD;
       }
@@ -47,8 +46,8 @@
     function Graph() {
       const SE = GetVal("Elev") * RPD;
       const SA = GetVal("Azi") * RPD;
-      const H = GetVal("Alti") * 1;
-      const T = GetVal("Turbi");
+      let H = GetVal("Alti") * 1;
+      let T = GetVal("Turbi");
       const O = GetVal("Ozone");
       const hd = GetId("hdr").selectedIndex;
       const B = GetVal("Luma") * (hd ? 18 : 36);
@@ -58,6 +57,7 @@
       let R;
       if (!(R = T > 0)) T = -T;
       let m1;
+      let S; // not used apparently?
       if (T) m1 = 1500; else { m1 = 300; H = S = 0 }
       GetId("Alti").hidden = GetId("Ozone").hidden = !T;
       const EH = acos(6371 / (6371 + H));
@@ -153,31 +153,40 @@
         }
       }
       ctx.putImageData(imgData, 0, 0);
-      if (!T) HTML("sclr", "Martian Sky");
-      else if (HS >= 0) {
+      if (!T) {
+        HTML("sclr", "Martian Sky");
+      } else if (HS >= 0) {
         const E1 = exp(-O1 * OS - M1 * MS - R1 * RS);
         const E2 = exp(-O2 * OS - M2 * MS - R2 * RS);
         const E3 = exp(-O3 * OS - M3 * MS - R3 * RS);
         ctx.fillStyle = "rgb(255," + (E2 / E1 * 255).toFixed() + "," + (E3 / E1 * 255).toFixed() + ")";
         GetId("sclr").style.color = ctx.fillStyle;
         HTML("sclr", "Sun Color = " + ctx.fillStyle.toUpperCase());
-      }
-      else HTML("sclr", " ");
+      } else HTML("sclr", " ");
     }
   </script>
   <style type="text/css">
     body {
-      background-color: #999;
+      background-color: #15202B;
+      color: white;
+    }
+
+    a {
+      color: rgb(29, 155, 240);
     }
 
     form {
       width: 900px;
       margin: auto;
-      margin-top: 10px;
-      padding: 10px;
-      font-family: Garamond;
-      font-size: 16px;
-      line-height: 16px;
+    }
+
+    input {
+      width: 55px;
+    }
+
+    fieldset {
+      border-radius: 2em;
+      text-align: center;
     }
   </style>
 </head>
@@ -187,54 +196,42 @@
     <fieldset>
       <legend>Panoramic Sky Renderer</legend>
       <table align="center">
-        <tbody>
-          <tr>
-            <td>Sun Elev.</td>
-            <td>Sun Azi.</td>
-            <td>Altitude</td>
-            <td>Haze</td>
-            <td>Ozone</td>
-            <td>Luma</td>
-            <td>Tone Map</td>
-            <td>Zoom</td>
-          </tr>
-          <tr>
-            <td width="100"><input type="number" id="Elev" value="30" min="-20" max="90" onchange="Graph()"> °
-            </td>
-            <td width="100"><input type="number" id="Azi" value="0" min="-180" max="180" onchange="Graph()"> °
-            </td>
-            <td width="100"><input type="number" id="Alti" value="0" min="0" max="99" onchange="Graph()"> km
-            </td>
-            <td width="85"><input type="number" id="Turbi" value="3" min="0" max="99" onchange="Graph()">
-            </td>
-            <td width="110"><input type="number" id="Ozone" value="300" min="230" max="460" step="10"
-                onchange="Graph()"> DU
-            </td>
-            <td width="90"><input type="number" id="Luma" value="10" min="1" max="99" onchange="Graph()">
-            </td>
-            <td width="110"><select id="hdr" onchange="Graph()">
-                <option selected="selected">Reinhard</option>
-                <option>sRGB</option>
-                <option>Linear
-                </option>
-              </select></td>
-            <td><input type="number" id="zoom" value="1" min="0" max="10" onchange="Graph()">
-            </td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Sun Elev.</td>
+          <td>Sun Azi.</td>
+          <td>Altitude</td>
+          <td>Haze</td>
+          <td>Ozone</td>
+          <td>Luma</td>
+          <td>Tone Map</td>
+          <td>Zoom</td>
+        </tr>
+        <tr>
+          <td width="100"><input type="number" id="Elev" value="30" min="-20" max="90" onchange="Graph()"> °</td>
+          <td width="100"><input type="number" id="Azi" value="0" min="-180" max="180" onchange="Graph()"> °</td>
+          <td width="100"><input type="number" id="Alti" value="0" min="0" max="99" onchange="Graph()"> km</td>
+          <td width="85"><input type="number" id="Turbi" value="3" min="0" max="99" onchange="Graph()"></td>
+          <td width="110"><input type="number" id="Ozone" value="300" min="230" max="460" step="10" onchange="Graph()">
+            DU</td>
+          <td width="90"><input type="number" id="Luma" value="10" min="1" max="99" onchange="Graph()"></td>
+          <td width="110">
+            <select id="hdr" onchange="Graph()">
+              <option selected="selected">Reinhard</option>
+              <option>sRGB</option>
+              <option>Linear</option>
+            </select>
+          </td>
+          <td><input type="number" id="zoom" value="1" min="0" max="10" onchange="Graph()"></td>
+        </tr>
       </table>
-      <br>
-      <pre id="coor" align="center"> </pre>
-      <p align="center"><canvas id="sky" onmousemove="showXY(event)" onmouseout="clearXY()" width="800"
-          height="200"></canvas> </p>
+      <pre id="coor" align="center"></pre>
+      <canvas id="sky" onmousemove="showXY(event)" onmouseout="clearXY()" width="800" height="200"></canvas>
       <pre id="sclr">Sun Color = #FFDFA0</pre>
     </fieldset>
-    <br><br><br>
     <center>
-      <a href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/en_rendo.htm">User's
-        Manual</a>
-      <br><br><br><b>Abdurrahman ÖZLEM © 2021 (PrayWare), <a
-          href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/rendo_en.htm">source</a></b>
+      <br><a href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/en_rendo.htm">User's
+        Manual</a>, Abdurrahman ÖZLEM © 2021 (PrayWare), <a
+        href="https://web.archive.org/web/20210511001822/http://alperen.cepmuvakkit.com/js/rendo_en.htm">source</a>
     </center>
   </form>
 </body>
