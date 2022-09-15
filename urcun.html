@@ -5,6 +5,16 @@
   <meta	name=Author content="Abdurrahman ÖZLEM">
   <title>URCUN</title>
   <script type=text/javascript>
+    'use strict';
+	var d, img, Y, str, MMA, P, JD1, next, last, auto,
+		imgData, limit, L0, S0, AlpClk, dvis, y11, y22,
+		phi1, phi2, cosHA1, cosHA2, x00, x22, x11, X0, p1,
+		lag, W, ARCL, I, MD, GAST, MLAT, R, F, D2, SD, i,
+		TL, OBL, ML, SMA, JD, JD0, temkin, j, k, g, x, S,
+		phi, phi0, cosHA, cosHA0, lon, y, lon0, q, p, tilt,
+		phi11, y1, x1, phi22, y2, x2, px0, px1, cc, r0, g0,
+		b0, h0, px, epx, c, H, b, r, yy, imgData0, xx, ctx,
+		cv, d1, X, local;
 
     function Moon() {
       JD0 = JD - .5 + temkin / 1440;
