@@ -1,0 +1,507 @@
+
+<html><head>
+  <meta	http-equiv=Content-Type	content="text/html; charset=windows-1254">
+  <meta	http-equiv=expires content="Fri, 31 Dec 2099 23:59:59 UTC">
+  <meta	name=Author content="Abdurrahman ÖZLEM">
+  <title>URCUN</title>
+  <script type=text/javascript>
+
+    function Moon() {
+      JD0 = JD - .5 + temkin / 1440;
+      SMA = 357.529*RPD	+ .98560028*RPD	* JD0;
+      ML  = 280.466*RPD	+ .98564737*RPD	* JD0;
+      OBL = 23.43929*RPD - .000000356*RPD * JD0;
+      TL  = ML + 1.914*RPD * sin(SMA) +	.02*RPD	* sin(2*SMA);
+      SD  = asin(sin(OBL) * sin(TL));
+      D2  = 235.700*RPD	+ 24.38149822*RPD * JD0;
+      MMA = 134.963*RPD	+ 13.06499295*RPD * JD0;
+      F	  =  93.272*RPD	+ 13.22935024*RPD * JD0;
+      P	  = 218.316*RPD	+ 13.17639647*RPD * JD0
+	    + 6.2888*RPD * sin(MMA)
+	    + 1.2740*RPD * sin(D2 - MMA)
+	    +  .6583*RPD * sin(D2)
+	    +  .2136*RPD * sin(2*MMA)
+	    -  .1851*RPD * sin(SMA)
+	    -  .1143*RPD * sin(2*F)
+	    +  .0588*RPD * sin(D2 - 2*MMA)
+	    +  .0571*RPD * sin(D2 - SMA	- MMA)
+	    +  .0533*RPD * sin(D2 + MMA)
+	    +  .0458*RPD * sin(D2 - SMA)
+	    -  .0409*RPD * sin(SMA - MMA)
+	    -  .0347*RPD * sin(D2/2)
+	    -  .0304*RPD * sin(SMA + MMA)
+	    +  .0153*RPD * sin(D2 - 2*F)
+	    -  .0125*RPD * sin(MMA + 2*F)
+	    +  .0110*RPD * sin(MMA - 2*F);
+
+      R	  =  385.0006
+	    - 20.9054 *	cos(MMA)
+	    -  3.6991 *	cos(D2 - MMA)
+	    -  2.9560 *	cos(D2)
+	    -	.5699 *	cos(2*MMA)
+	    +	.2462 *	cos(D2 - 2*MMA)
+	    -	.2046 *	cos(D2 - SMA)
+	    -	.1707 *	cos(D2 + MMA)
+	    -	.1521 *	cos(D2 - SMA - MMA)
+	    -	.1296 *	cos(SMA	- MMA)
+	    +	.1087 *	cos(D2/2)
+	    +	.1048 *	cos(SMA	+ MMA)
+	    +	.0797 *	cos(MMA	- 2*F)
+	    +	.0489 *	cos(SMA);
+
+      MLAT=  5.1281*RPD	* sin(F)
+	    + .2806*RPD	* sin(MMA + F)
+	    + .2777*RPD	* sin(MMA - F)
+	    + .1732*RPD	* sin(D2 - F)
+	    + .0554*RPD	* sin(D2 - MMA + F)
+	    + .0463*RPD	* sin(D2 - MMA - F)
+	    + .0326*RPD	* sin(D2 + F);
+
+      GAST = ML	- 180.005*RPD +	temkin * RPD/4 - atan2(sin(P)*cos(OBL) - tan(MLAT)*sin(OBL), cos(P));
+      MD = asin(sin(MLAT)*cos(OBL) + cos(MLAT)*sin(OBL)*sin(P));
+      P	-= TL;
+      I	= cos(P) * cos(MLAT);
+      ARCL = acos(I);
+      I	= (1 - I) / 2;
+      P	/= 2 * PI;
+      P	-= floor(P);
+      W	= 11950	* I / R;
+    }
+
+    function Hday() {
+      hday = -1;
+      k	= 0;
+      j	= JD;
+      do {
+	hday +=	floor(k/15 + 1);
+	JD = j - hday;
+	temkin = 0;
+	Moon();
+	k = P*360 - acos(cos(8*RPD) / cos(MLAT)) / RPD;
+	if (k <	0)  k += 360;
+      }	 while (!hday || k < 180);
+      lag = 360	- k;
+      hyear = JD / 29.53058868 + 17049.3;
+      JD = j;
+      hmon  = floor(hyear % 12 + 1);
+      hyear = floor(hyear / 12);
+      return  hday;
+    }
+
+    function GetVal(id)	{
+      return  document.getElementById(id).value;
+    }
+
+    function SetVal(id,	val) {
+      return  document.getElementById(id).value	= val;
+    }
+
+    function HTML(id, val) {
+      document.getElementById(id).innerHTML = val;
+    }
+
+    function Pixel(x, y, c) {
+      p	= 4*((y|0)*X+(x|0));
+      if (c < 0)  imgData.data[p+3] = 1;
+      else  imgData.data[p] = c;
+    }
+
+    function showXY(event) {
+      xx = (event.offsetX+scroll+2*X)%X;
+      yy = min(event.offsetY+1,Y-1);
+      HTML("coor", "Lat = " + (90-yy/Y*180).toFixed(1) + "°  ,  Lon = "	+ (xx/X*360-180).toFixed(1)
+	   + "°  ,  Alt = " + 30*imgData0.data[4*floor(yy*X+xx)] + " m");
+    }
+
+    function clearXY() {
+      HTML("coor", local ? ((next ? (last ? "Previous" : "Next") : (last ? "Last" : "First")) +	" Day Graph :")	:
+       "Isha-based First Day Map :");
+    }
+
+    function Get_cosHA() {
+      phi = max(min(phi,PI/2),-PI/2);
+      cosHA = (sin(S+ARCL)-sin(MD)*sin(phi))/cos(MD)/cos(phi);
+      cosHA = max(min(cosHA,1),-1);
+    }
+
+    function GetLon() {
+      lon = ((last?-1:1)*acos(cosHA)-GAST)/RPD;
+      lon = (lon + 81180) % 360	- 180;
+      y	= (.5-phi/PI)*Y;
+      x	= ((lon/360+1.5)*X-scroll)%X;
+    }
+
+    function GMT() {
+      return  d.toUTCString().replace(":00 "," ");
+    }
+
+    function Graph(click) {
+      next = click && local ? !next : false;
+      local = document.getElementById("vis").selectedIndex;
+      last = local > 1;
+      auto = document.getElementById("topo");
+      if (!local)  auto.checked	= 0;
+      auto = auto.checked;
+      document.getElementById("alti").disabled = auto || !local;
+      clearXY();
+      imgData =	ctx.createImageData(X, Y);
+      JD = JD1;
+      JD -= Hday();
+      hyear = JD / 29.53058868 + 17049.3;
+      if (last)	{
+	JD += 31;
+	do {
+	  --JD;
+	  Moon();
+	  k = P*360 + acos(cos(8*RPD) /	cos(MLAT)) / RPD;
+	} while	(k < 180 || k >	360);
+	lag = 360 - k;
+      }
+      limit = auto ? -4.5 : -acos(6371 / (6371 + GetVal("alti")/1000)) / RPD - 2;
+      lag    = lag * R/385*R/385;
+      L0     = next ? 10 : 1;
+      S0     = next ? (last ? .25 : .75) : .5;
+      AlpClk = floor(120*(lag+(last?-limit-L0:limit+L0)));
+      vis    = [0,0,0,0,0,0,0,0,0,0,0,0];
+      dvis   = [0,0,0,0,0,0,0,0,0,0,0,0];
+      y11    = [0,0,0,0,0,0,0,0,0,0,0,0];
+      y22    = [0,0,0,0,0,0,0,0,0,0,0,0];
+      phi1   = [0,0,0,0,0,0,0,0,0,0,0,0];
+      phi2   = [0,0,0,0,0,0,0,0,0,0,0,0];
+      cosHA1 = [0,0,0,0,0,0,0,0,0,0,0,0];
+      cosHA2 = [0,0,0,0,0,0,0,0,0,0,0,0];
+      scroll = 0;
+      x00    = last ? 0	: X;
+      X0     = x11 = x22 = last	? 0 : X-1;
+      p1     = new Array(X);
+      HTML("visdata", "");
+      for (i=0;	i<4; i++)  HTML("vis"+(i), "");
+      if (local)  for (temkin=AlpClk; last?temkin>AlpClk-2000:temkin<AlpClk+2000; last?--temkin:++temkin) {
+	Moon();
+	S = .043784 - ARCL + 6.372 / (R	- .3903);
+	phi0 = phi = asin((sin(MD)*cos(S)-sin(SD)*cos(S+ARCL))/sin(ARCL));
+	Get_cosHA();
+	cosHA0 = cosHA;
+	GetLon();
+	lon0 = lon;
+	if (temkin == AlpClk)  scroll =	(lon/360-S0)*X;
+	else if	(abs(x-x00) < X/4) {
+	  Pixel(x, y, -1);
+	  x00 =	x;
+	}
+	for (i=0; i<(auto?12:4); ++i) {
+	  dvis[i] = -3.99555 - S/RPD + 6 * sqrt(W) - 4.9 - limit - (auto?i/2:i);
+	  q = !next || temkin != AlpClk;
+	  if (dvis[i] >	0) {
+	    if (!vis[i]) {
+	      vis[i] = true;
+	      d.setTime((JD + 10957) * 86400000	+ temkin * 60000);
+	      if (!auto	&& !next) {
+		HTML("visdata",	"<U>"+(last?"Last":"First")+" Visibility Data :</U>");
+		HTML("vis"+(i),	"<pre style=color:rgb("+r[i+3]*4+","+g[i+3]*4+","+b[i+3]*4+")>Zone-"
+		     + String.fromCharCode(68-i) + ":    Time = " + GMT()
+		     + "  ,  Lat = " + (phi0/RPD).toFixed(1) + "°  ,  Lon = " +	(lon0).toFixed(1) + "°");
+	      }
+	    }
+	    tilt = acos(sin(ARCL-dvis[i]*RPD)/sin(ARCL));
+	    phi	= max(phi1[i], phi0 + tilt*cos(abs(MD)+.25*cosHA1[i]*cosHA1[i]));
+	    if (abs(cosHA1[i]) >= 1) {
+	      phi = max(phi1[i], (cosHA1[i]>0?.15:.35)*phi + (cosHA1[i]>0?.85:.65)*asin(sin(MD+PI/2-S-ARCL)));
+	      cosHA = cosHA1[i];
+	    }
+	    else  Get_cosHA();
+	    GetLon();
+	    phi11 = phi;
+	    cosHA1[i] =	cosHA;
+	    while (q) {
+	      y1 = y;
+	      x1 = x;
+	      if (abs(x1-x11) <	X/4) {
+		Pixel(x1, y1, i+1);
+		x11 = x1;
+	      }
+	      else if (abs(x11-X0) < X/10)  Pixel(X0, y1, i+1);
+	      phi -= .1*RPD;
+	      if (phi >	phi1[i]) {
+		Get_cosHA();
+		GetLon();
+	      }
+	      else  break;
+	    }
+	    if (q)  phi1[i] = phi11;
+	    phi	= min(phi2[i], phi0 - tilt*cos(abs(MD)+.25*cosHA2[i]*cosHA2[i]));
+	    if (abs(cosHA2[i]) >= 1) {
+	      phi = min(phi2[i], (cosHA2[i]>0?.15:.35)*phi + (cosHA2[i]>0?.85:.65)*asin(sin(MD-PI/2+S+ARCL)));
+	      cosHA = cosHA2[i];
+	    }
+	    else  Get_cosHA();
+	    GetLon();
+	    phi22 = phi;
+	    cosHA2[i] =	cosHA;
+	    while (q) {
+	      y2 = y;
+	      x2 = x;
+	      if (abs(x2-x22) <	X/4) {
+		Pixel(x2, y2, i+1);
+		x22 = x2;
+	      }
+	      else if (abs(x22-X0) < X/10)  Pixel(X0, y2, i+1);
+	      phi += .1*RPD;
+	      if (phi <	phi2[i]) {
+		Get_cosHA();
+		GetLon();
+	      }
+	      else  break;
+	    }
+	    if (q)  phi2[i] = phi22;
+	  }
+	  else {
+	    phi1[i] = phi2[i] =	phi0;
+	    cosHA1[i] =	cosHA2[i] = cosHA0;
+	  }
+	}
+      }
+      else {
+	temkin = AlpClk;
+	do {
+	  ++temkin;
+	  Moon();
+	} while	(ARCL <	8*RPD);
+	d.setTime((JD +	10957) * 86400000 + temkin * 60000);
+	HTML("visdata",	"<pre><center>First Visibility Time = "	+ GMT());
+	scroll =(-temkin/1440)*X;
+	GAST = ML - PI + temkin	* RPD/4	- atan2(sin(TL)*cos(OBL), cos(TL));
+	for (phi=-PI/2;	phi<PI/2; phi+=PI/Y) {
+	  S = -ARCL;
+	  Get_cosHA();
+	  cosHA	= max(min((sin(-1*RPD)-sin(SD)*sin(phi))/cos(SD)/cos(phi),.923880),-.923880);
+	  GetLon();
+	  x1 = x;
+	  cosHA	= max(min((sin(-17.5*RPD)-sin(SD)*sin(phi))/cos(SD)/cos(phi),.793353),-.991445);
+	  last = 1;
+	  GetLon();
+	  Pixel(x, y, 7);
+	  x2 = x;
+	  x11 =	(x2-x1)/2+x1;
+	  x22 =	(x2-x1)/3+x1;
+	  Pixel(x11, y,	8);
+	  Pixel(x22, y,	9);
+	  last = 0;
+	  GetLon();
+	  Pixel(min(x,x22), y, 10);
+	}
+      }
+      px0 = next ? 240 : 120;
+      px1 = px0	/ 2 - 1;
+      cc = local ? 12 :	13;
+      for (x=0;	x<X; x++)  p1[last?x:X-1-x] = 4*(((x+scroll+2*X)%X|0)-x);
+      for (p=0,	y=0; y<Y; ++y) {
+	r0 = r[cc];
+	g0 = g[cc];
+	b0 = b[cc];
+	h0 = -1;
+	epx = px = 0;
+	if (!last)  p =	4*((y+1)*X+1);
+	if (auto)  for (x=0; x<X; x++) {
+	  if (!last)  p	-= 8;
+	  k = H[imgData0.data[p	+ p1[x]]];
+	  c = imgData.data[p];
+	  if (c) {
+	    h0 = c/2 - 1;
+	    epx	= c < 11;
+	    px = 0;
+	  }
+	  else if (epx && px < px1)  ++px;
+	  if (imgData.data[p+3]) {
+	    imgData.data[p++] =	255;
+	    imgData.data[p++] =	0;
+	    imgData.data[p++] =	255;
+	  }
+	  else {
+	    c =	h0 + k + px/px0	| 0;
+	    imgData.data[p++] =	k * r[c];
+	    imgData.data[p++] =	k * g[c];
+	    imgData.data[p++] =	k * b[c];
+	  }
+	  imgData.data[p++] = 255;
+	}
+	else for (x=0; x<X; x++) {
+	  if (!last)  p	-= 8;
+	  k = H[imgData0.data[p	+ p1[x]]];
+	  c = imgData.data[p];
+	  if (c) {
+	    r0 = r[c+2];
+	    g0 = g[c+2];
+	    b0 = b[c+2];
+	  }
+	  if (imgData.data[p+3]) {
+	    imgData.data[p++] =	255;
+	    imgData.data[p++] =	0;
+	    imgData.data[p++] =	255;
+	  }
+	  else {
+	    imgData.data[p++] =	k * r0;
+	    imgData.data[p++] =	k * g0;
+	    imgData.data[p++] =	k * b0;
+	  }
+	  imgData.data[p++] = 255;
+	}
+      }
+      ctx.putImageData(imgData,	0, 0);
+    }
+
+    var	 sin=Math.sin, cos=Math.cos, tan=Math.tan, asin=Math.asin, acos=Math.acos, atan=Math.atan,
+	 atan2=Math.atan2, sqrt=Math.sqrt, abs=Math.abs, floor=Math.floor, min=Math.min, max=Math.max,
+	 PI=Math.PI, RPD=PI/180, init=true;
+
+    function Astro(hijri) {
+      if (init)	{
+	init = false;
+	d = d1 = new Date();
+	document.getElementById("vis").selectedIndex = 1;
+	SetVal("dt", d.toISOString ? d.toISOString().substr(0,10) : d.toUTCString());
+	img = document.getElementById("earth0");
+	X = img.width;
+	Y = img.height;
+	cv = document.getElementById("earth");
+	ctx = cv.getContext("2d");
+	cv.width = X;
+	cv.height = Y;
+	ctx.drawImage(img, 0, 0);
+	imgData0 = ctx.getImageData(0, 0, X, Y);
+	r = [32,32,32,64,64, 0,	0, 0, 0,64,48, 0,32,64];
+	g = [32,32,32,32,64,64,	0, 0, 0, 0,64,64,32, 0];
+	b = [32,32,32, 0, 0, 0,64,64,64,64, 0,64,32, 0];
+	H = new	Array(256);
+	for (x=0; x<256; x++)  H[x] = acos(6371	/ (6371	+ .03*x)) / RPD	+ 1;
+      }
+      if (hijri) {
+	hday0 =	GetVal("hday");
+	hmon = document.getElementById("hmon").selectedIndex + 1;
+	hyear =	GetVal("hyear");
+	JD = floor((hyear * 12 + hmon -	17049.3) * 29.53058868);
+	JD += hday0 - Hday();
+	if (Hday() == 1	&& hday0 == 30)	{
+	  SetVal("hday", 29);
+	  --JD;
+	}
+	d.setTime((JD +	10957) * 86400000);
+	SetVal("dt", d.toISOString ? d.toISOString().substr(0,10) : d.toUTCString());
+      }
+      else {
+	str = GetVal("dt");
+	if (d.toISOString)  str	= str.substr(0,10);
+	d1 = new Date(str);
+	if (isNaN(d1.getDate()))  document.getElementById("dt").focus();
+	else  d	= d1;
+	JD = floor(d.getTime() / 86400000 - 10957);
+	SetVal("hday", Hday());
+	document.getElementById("hmon").selectedIndex =	hmon - 1;
+	SetVal("hyear",	hyear);
+      }
+      JD1 = JD;
+      Graph(0);
+    }
+  </script>
+  <noscript><TT><H1> >>> Please	activate the "Javascript" feature..!</noscript>
+  <style type=text/css>
+    table, body	{
+      color:DarkGray;
+      background:black;
+      margin-bottom:3px;
+      font-size:24px;	
+      font-family:Garamond;
+    }
+    select {
+      color:white;
+      background:black;
+      margin-bottom:3px;
+      font-size:24px;	
+      font-family:Garamond;
+    }
+    form {
+      width:1500px;
+      margin:auto;
+      margin-top:10px;
+      padding:10px;
+      font-family:Garamond;
+      font-size:24px;	
+      line-height:24px;
+    }
+    fieldset {
+      width:1440px;
+      margin:30px;
+      padding:20px;
+      -moz-border-radius:10px;
+      -webkit-border-radius:10px;
+      -khtml-border-radius:10px;
+      border-radius:10px;
+    }
+    legend {
+      font-family:Georgia;
+      font-weight:bold;
+      font-style:italic;
+      padding-bottom:10px;
+    }
+    input {
+      color:white;
+      background:black;
+      font-family:Garamond;
+      font-size:24px;	
+      margin-bottom:5px;
+      padding-left:10px;
+    }
+  </style>
+</head>
+<body onload=Astro(0)><form>
+<fieldset>
+  <legend>URCUN	-- Crescent Visibility Map Generator</legend>
+  <table align=center>
+    <td>Gregorian Date
+    <td>
+    <td>Hijri Date
+    <td>
+    <td>Crescent
+    <td>
+    <td>Altitude
+    <tr>
+    <td	width=300><input type=date id=dt onchange=Astro(0) title="Enter in the format 'yyyy/mm/dd' if calendar or up/down buttons are not visible.">
+    <td	width=50><input	type=number id=hday min=1 max=30 onchange=Astro(1) title="Hijri Day between 1 and 29/30">
+    <td><select	id=hmon	onchange=Astro(1) title="Select Hijri Month">
+      <option>Muharram</option>
+      <option>Safar</option>
+      <option>Rabiul-Awwal</option>
+      <option>Rabiul-Akhir</option>
+      <option>Jamadiul-Awwal</option>
+      <option>Jamadiul-Akhir</option>
+      <option>Rajab</option>
+      <option>Sha'ban</option>
+      <option>Ramadhan</option>
+      <option>Shawwal</option>
+      <option>Dhil-Q'adah</option>
+      <option>Dhil-Hijja</option>
+    </select>
+    <td	width=200><input type=number id=hyear min=1319 max=1523	onchange=Astro(1) title="Hijri Year between 1319 and 1523">
+    <td><select	id=vis onchange=Graph(0) title="Regional: Isha-based New Moon;   Waxing: Local New Moon;   Waning: Local Old Moon">
+      <option>Regional</option>
+      <option>Waxing</option>
+      <option>Waning</option>
+    </select>
+    <td	width=100>
+    <td	width=150><input type=number id=alti value=0 min=0 max=4000 step=100 onchange=Graph(0) title="Between 0 and 4000"> m.
+    <td><input type=checkbox id=topo onchange=Graph(0) title="Topographic Visibility Map"> Auto
+  </table>
+  <br>
+  <pre id=coor align=center></pre>
+  <canvas id=earth title="Click to see the Next/Previous Day" onmousemove=showXY(event)	onmouseout=clearXY() onclick=Graph(1)></canvas>
+  <img id=earth0 hidden	src=topo.png>
+  <p id=visdata>
+  <p id=vis3>
+  <p id=vis2>
+  <p id=vis1>
+  <p id=vis0>
+</fieldset>
+<br><br><center><a href=en_urcun.htm>User's Manual</a>
+</a>
+<br><br><br><b>Abdurrahman ÖZLEM © 2018	(PrayWare)<br><br><hr>
+</form></body></html>
