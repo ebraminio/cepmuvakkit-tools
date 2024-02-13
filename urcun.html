@@ -1,8 +1,6 @@
 
 <html><head>
-  <meta	http-equiv=Content-Type	content="text/html; charset=windows-1254">
-  <meta	http-equiv=expires content="Fri, 31 Dec 2099 23:59:59 UTC">
-  <meta	name=Author content="Abdurrahman ÖZLEM">
+  <meta charset=utf8 />
   <title>URCUN</title>
   <script type=text/javascript>
     'use strict';
@@ -14,7 +12,7 @@
 		phi, phi0, cosHA, cosHA0, lon, y, lon0, q, p, tilt,
 		phi11, y1, x1, phi22, y2, x2, px0, px1, cc, r0, g0,
 		b0, h0, px, epx, c, H, b, r, yy, imgData0, xx, ctx,
-		cv, d1, X, local;
+		cv, d1, X, local, hday, hyear, hmon, vis;
 
     function Moon() {
       JD0 = JD - .5 + temkin / 1440;
@@ -386,7 +384,7 @@
 	for (x=0; x<256; x++)  H[x] = acos(6371	/ (6371	+ .03*x)) / RPD	+ 1;
       }
       if (hijri) {
-	hday0 =	GetVal("hday");
+	var hday0 = GetVal("hday");
 	hmon = document.getElementById("hmon").selectedIndex + 1;
 	hyear =	GetVal("hyear");
 	JD = floor((hyear * 12 + hmon -	17049.3) * 29.53058868);
